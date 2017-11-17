@@ -38,13 +38,13 @@ access_secret = ""
 ```
 
 
-# authenticating twitter to R
+#authenticating twitter to R
 ```{r}
 setup_twitter_oauth(consumer_key,consumer_secret,access_token ,access_secret)
 ```
 
 
-# searching for the word intel in my twitter account
+#searching for the word intel in my twitter account
 ```{r}
 intel = searchTwitter("intel",n=1000,lang = "en")
 dim(intel)
@@ -59,7 +59,7 @@ tweets <- ldply(intel,function(t) t$toDataFrame())
 class(tweets)
 ```
 
-# store the data to local system as csv file 
+#store the data to local system as csv file 
 ```{r}
 write.csv(tweets,"D:\\inteltweets12.csv")
 ```
@@ -87,7 +87,7 @@ docs
 
 
 
-# removing the stop words
+#removing the stop words
 ```{r}
 # Convert the text to lower case
 docs <- tm_map(docs, content_transformer(tolower))
@@ -103,7 +103,7 @@ docs <- tm_map(docs, stripWhitespace)
 
 
 
-# making a matrix 
+#making a matrix 
 ```{r}
 # create document term matrix
 dtm <- DocumentTermMatrix(docs)
@@ -115,7 +115,7 @@ wf <- data.frame(word = names(freq), freq = freq)
 
 
 
-# looking for words that a repeated and which are used for sentimental analysis
+#looking for words that a repeated and which are used for sentimental analysis
 ```{r}
 subset(wf, freq > 50) %>%
       ggplot(aes(word, freq)) +
@@ -128,7 +128,7 @@ wordcloud(names(freq), freq, min.freq = 50, max.words = 420, scale = c(5, .1), c
 ```
 
 
-# analysis and the sentimental result is ploted using ggplot
+#analysis and the sentimental result is ploted using ggplot
 ```{r}
 d = get_nrc_sentiment(msgs)
 #head(d)
@@ -159,16 +159,11 @@ This is an R Markdown document. Markdown is a simple formatting syntax for autho
 
 When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
 
-```{r cars}
-summary(cars)
-```
+
 
 ## Including Plots
 
 You can also embed plots, for example:
 
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
 
 Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

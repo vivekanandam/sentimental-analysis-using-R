@@ -1,0 +1,174 @@
+---
+title: "twitter"
+author: "vivek"
+date: "November 3, 2017"
+output: html_document
+---
+
+#required packages to be installed
+```{r}
+install.packages("twitteR")
+install.packages("plyr")
+install.packages("SnowballC")
+install.packages("syuzhet")
+install.packages("RColorBrewer")
+```
+
+
+#loading the library that are installed
+```{r}
+library(SnowballC)
+library(twitteR)
+library(plyr)
+library(tm)
+library(ggplot2)
+library(wordcloud)
+library(dplyr)
+library(syuzhet)
+library(RColorBrewer)
+```
+
+#keys that are to be generated from twitter API (Uniqe for every user created apps)
+```{r}
+consumer_key = ""
+consumer_secret= ""
+access_token = ""
+access_secret = ""
+
+```
+
+
+# authenticating twitter to R
+```{r}
+setup_twitter_oauth(consumer_key,consumer_secret,access_token ,access_secret)
+```
+
+
+# searching for the word intel in my twitter account
+```{r}
+intel = searchTwitter("intel",n=1000,lang = "en")
+dim(intel)
+#intel
+class(intel)
+```
+
+
+#converting list into data fram 
+```{r}
+tweets <- ldply(intel,function(t) t$toDataFrame())
+class(tweets)
+```
+
+# store the data to local system as csv file 
+```{r}
+write.csv(tweets,"D:\\inteltweets12.csv")
+```
+
+#loading the data from the local 
+```{r}
+df =read.csv("d:/inteltweets12.csv",stringsAsFactors = FALSE)
+str(df)
+
+``` 
+
+
+#take a look at the input data 
+```{r}
+msgs = df[, c("text")]
+head(msgs, 3)
+```
+
+
+#using corpus making the data into vector 
+```{r}
+docs = Corpus(VectorSource(msgs))
+docs
+```
+
+
+
+# removing the stop words
+```{r}
+# Convert the text to lower case
+docs <- tm_map(docs, content_transformer(tolower))
+# Remove numbers
+docs <- tm_map(docs, removeNumbers)
+# Remove english common stopwords
+docs <- tm_map(docs, removeWords, stopwords("english"))
+# Remove punctuations
+docs <- tm_map(docs, removePunctuation)
+# Eliminate extra white spaces
+docs <- tm_map(docs, stripWhitespace)
+```
+
+
+
+# making a matrix 
+```{r}
+# create document term matrix
+dtm <- DocumentTermMatrix(docs)
+freq <- colSums(as.matrix(dtm))
+ord <- order(freq)
+freq <- sort(colSums(as.matrix(dtm)), decreasing = TRUE)
+wf <- data.frame(word = names(freq), freq = freq)
+```
+
+
+
+# looking for words that a repeated and which are used for sentimental analysis
+```{r}
+subset(wf, freq > 50) %>%
+      ggplot(aes(word, freq)) +
+      geom_bar(stat = "identity") + 
+      theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+set.seed(42)
+wordcloud(names(freq), freq, min.freq = 50, max.words = 420, scale = c(5, .1), colors = c(1:6))
+
+```
+
+
+# analysis and the sentimental result is ploted using ggplot
+```{r}
+d = get_nrc_sentiment(msgs)
+#head(d)
+td = data.frame(t(d))
+ 
+td_new = data.frame(rowSums(td[2:1000]))
+#The function rowSums computes column sums across rows for each level of a grouping variable.
+
+#Transformation and  cleaning
+names(td_new)[1] <- "count"
+td_new <- cbind("sentiment" = rownames(td_new), td_new)
+rownames(td_new) <- NULL
+td_new2<-td_new[1:8,]
+qplot(sentiment, data=td_new2, weight=count, geom="bar",fill=sentiment)+ggtitle("FB comment sentiments")
+```
+
+
+
+
+
+
+
+
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
